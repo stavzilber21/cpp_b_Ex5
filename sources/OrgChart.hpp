@@ -4,12 +4,11 @@
 #include <vector>
 using namespace std;
 namespace ariel{
-    class OrgChart : public error_code {
+    class OrgChart{
     private:
-        struct Node{
-            int level;
+        class Node{
+        public:
             string name;
-            Node *parentNode;
             vector<Node*>node_childs;
 
             Node(const string &name) {
@@ -19,104 +18,89 @@ namespace ariel{
         class Iterator{
 
         private:
-            int i;
             Node *node;
-            vector<string> node_list;
+            vector<Node*>node_list;
+
         public:
 
-            Iterator(Node *root, string id_function){
-                if(id_function.compare("begin_level")){
-                    begin_level_help(root);
-                }
-                if(id_function.compare("begin_reverse")){
-                    begin_reverse_help(root);
-                }
-                if(id_function.compare("begin_preorder")){
-                    preorder_help(root);
-                }
-            }
-
-            void begin_level_help(Node *root){
-                vector<Node*>tree_level;
-                tree_level.push_back(root);
-                for (unsigned int i = 0; i < tree_level.size(); ++i) {
-                    Node *temp = tree_level[i];
-                    this->node_list.push_back(temp->name);
-                    for (unsigned int j = 0; j < temp->node_childs.size(); ++j) {
-                        Node *temp_child = temp->node_childs[i];
-                        tree_level.push_back(temp_child);
+            Iterator(Node *root = nullptr, const string &id_function =""){
+                if(root!= nullptr){
+                    if(id_function=="begin_level"){
+                        begin_level_help(root);
                     }
-                }
-            }
-
-            void begin_reverse_help(Node *root){
-                vector<Node*>tree_level;
-                tree_level.push_back(root);
-                for (unsigned int i = 0; i < tree_level.size(); ++i) {
-                    Node *temp = tree_level[i];
-                    unsigned int len = temp->node_childs.size();
-                    for (unsigned int j = 0; j < len; ++j) {
-                        tree_level.push_back(temp->node_childs[len-1-j]);
+                    else if(id_function=="begin_reverse"){
+                        begin_reverse_help(root);
                     }
+                    else if(id_function=="begin_preorder"){
+                        preorder_help(root);
+                    }
+                    this->node = node_list.at(0);
+                    node_list.erase(node_list.begin());
                 }
 
-                for (unsigned int i = 0; i < tree_level.size(); ++i) {
-                    unsigned int len = tree_level.size();
-                    string name_node = tree_level[len -i-1]->name;
-                    this->node_list.push_back(name_node);
+                else{
+                    this->node= nullptr;
                 }
 
             }
+            void begin_level_help(Node* root);
+            void begin_reverse_help(Node* root);
+            void preorder_help(Node* root);
 
-            void preorder_help(Node *root){
-                this->node_list.push_back(root->name);
-                for (unsigned int i = 0; i < root->node_childs.size(); ++i) {
-                    preorder_help(root->node_childs[i]);
-                }
-            }
 
-            bool operator!=(const Iterator& it) const{
-                return false;
+            bool operator!=(const Iterator& iter) const{
+                return this->node != iter.node;
             }
-            const Iterator operator++(int){
+            bool operator==(const Iterator& iter) const{
+                return this->node == iter.node;
+            }
+            Iterator operator++(int){
                 Iterator t = *this;
                 return t;
             }
             Iterator& operator++(){
+                if (!node_list.empty()) {
+                    this->node = node_list.at(0);
+                    node_list.erase(node_list.begin());
+                }
+                else {
+                    this->node = nullptr;
+                }
                 return *this;
             }
             string operator*() const{
-                return "";
+                return (*this->node).name;
             }
             string* operator->() const{
-                return nullptr;
+                return &node->name;;
             }
 
         };
-        Node *root;
-        int max_level;
+
+
     public:
-        vector<string>begin_level;
-        vector<string>reverse_level;
-        vector<string>beginPreorder;
+        Node *root;
+
         OrgChart();
         ~OrgChart();
+        OrgChart &operator=(OrgChart const &other) = default;
+        OrgChart &operator=(OrgChart &&other) = default;
+        OrgChart(OrgChart&) = default;
+        OrgChart(OrgChart&&) = default;
 
-        OrgChart& add_root(string name);
-        OrgChart& add_sub(string name1, string name2);
-        friend ostream& operator<<(ostream& output, OrgChart &org);
-        bool exist_dad(Node root, string &name1, string &name2);
-        void begin_level_help(Node *root);
-        void begin_reverse_help(Node *root);
-        void preorder_help(Node *root);
-        Iterator begin();
-        Iterator end();
-        Iterator begin_level_order();
-        Iterator end_level_order();
-        Iterator begin_reverse_order();
-        Iterator reverse_order();
-        Iterator begin_preorder();
-        Iterator end_preorder();
+        OrgChart& add_root(const string &name);
+        OrgChart& add_sub( const string &name1,const  string &name2);
+        friend ostream& operator<<(ostream& output,OrgChart &org);
+        bool exist_dad(Node *root, const string &name1,const  string &name2);
+        void delete_node(Node *root);
+        Iterator begin()const;
+        Iterator end()const;
+        Iterator begin_level_order()const;
+        Iterator end_level_order()const;
+        Iterator begin_reverse_order()const;
+        Iterator reverse_order()const;
+        Iterator begin_preorder()const;
+        Iterator end_preorder()const;
     };
 
 }
